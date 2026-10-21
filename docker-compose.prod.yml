@@ -1,0 +1,35 @@
+# Docker Compose modo PRODUCCIÓN - Repositorio Backend + PostgreSQL
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: sgb_db_prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-sgb}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sgb123}
+      POSTGRES_DB: ${POSTGRES_DB:-sgb_madeira}
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sgb}"]
+      interval: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: sgb_backend_prod
+    restart: always
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://sgb:sgb123@db:5432/sgb_madeira}
+      SECRET_KEY: ${SECRET_KEY:-clave_produccion_madeira}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,https://tu-app.vercel.app}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata_prod:
