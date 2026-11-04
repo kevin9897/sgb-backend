@@ -1,4 +1,4 @@
-"""Controlador HTTP (Router) para Usuarios."""
+"""Controlador HTTP (Router) para Usuarios (DDSI1-5, DDSI1-10)."""
 from typing import Optional
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -10,8 +10,12 @@ router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
 
 
 @router.get("", response_model=list[UsuarioOut])
-def listar_usuarios(rol: Optional[str] = None, db: Session = Depends(get_db)):
-    return UsuarioService(db).listar_usuarios(rol=rol)
+def listar_usuarios(
+    rol: Optional[str] = None,
+    q: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    return UsuarioService(db).listar_usuarios(rol=rol, q=q)
 
 
 @router.post("", response_model=UsuarioOut)

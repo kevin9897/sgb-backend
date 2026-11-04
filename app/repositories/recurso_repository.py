@@ -1,5 +1,6 @@
 """Capa de Persistencia (Repositorio/DAO) para Recursos Bibliográficos."""
 from typing import Optional
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from app.constants import EstadoRecurso
 from app.models.recurso import Recurso
@@ -10,13 +11,28 @@ class RecursoRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def listar(self, coleccion: Optional[str] = None, estado: Optional[str] = None) -> list[Recurso]:
-        q = self.db.query(Recurso)
+    def listar(
+        self,
+        coleccion: Optional[str] = None,
+        estado: Optional[str] = None,
+        q: Optional[str] = None,
+    ) -> list[Recurso]:
+        query = self.db.query(Recurso)
         if coleccion:
-            q = q.filter(Recurso.coleccion == coleccion)
+            query = query.filter(Recurso.coleccion == coleccion)
         if estado:
-            q = q.filter(Recurso.estado == estado)
-        return q.order_by(Recurso.id).all()
+            query = query.filter(Recurso.estado == estado)
+        if q:
+            like = f"%{q.strip()}%"
+            query = query.filter(
+                or_(
+                    Recurso.codigo_recurso.ilike(like),
+                    Recurso.titulo.ilike(like),
+                    Recurso.autores.ilike(like),
+                    Recurso.isbn_issn.ilike(like),
+                )
+            )
+        return query.order_by(Recurso.id).all()
 
     def obtener_por_codigo(self, codigo_recurso: str) -> Optional[Recurso]:
         return self.db.query(Recurso).filter(Recurso.codigo_recurso == codigo_recurso).first()

@@ -1,4 +1,4 @@
-"""Capa de Lógica de Negocio (Service) para Recursos Bibliográficos."""
+"""Capa de Lógica de Negocio (Service) para Recursos Bibliográficos (DDSI1-7, DDSI1-9)."""
 from typing import Optional
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -13,8 +13,13 @@ class RecursoService:
         self.recurso_repo = RecursoRepository(db)
         self.usuario_repo = UsuarioRepository(db)
 
-    def listar_recursos(self, coleccion: Optional[str] = None, estado: Optional[str] = None):
-        return self.recurso_repo.listar(coleccion=coleccion, estado=estado)
+    def listar_recursos(
+        self,
+        coleccion: Optional[str] = None,
+        estado: Optional[str] = None,
+        q: Optional[str] = None,
+    ):
+        return self.recurso_repo.listar(coleccion=coleccion, estado=estado, q=q)
 
     def crear_recurso(self, data: RecursoCreate):
         if self.recurso_repo.obtener_por_codigo(data.codigo_recurso):

@@ -10,11 +10,22 @@ class UsuarioRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def listar(self, rol: Optional[str] = None) -> list[Usuario]:
-        q = self.db.query(Usuario)
+    def listar(self, rol: Optional[str] = None, q: Optional[str] = None) -> list[Usuario]:
+        query = self.db.query(Usuario)
         if rol:
-            q = q.filter(Usuario.rol == rol)
-        return q.order_by(Usuario.id).all()
+            query = query.filter(Usuario.rol == rol)
+        if q:
+            like = f"%{q.strip()}%"
+            query = query.filter(
+                or_(
+                    Usuario.identificacion.ilike(like),
+                    Usuario.codigo.ilike(like),
+                    Usuario.nombres.ilike(like),
+                    Usuario.apellidos.ilike(like),
+                    Usuario.correo_institucional.ilike(like),
+                )
+            )
+        return query.order_by(Usuario.id).all()
 
     def obtener_por_identificacion_o_codigo(self, identificador: str) -> Optional[Usuario]:
         return (

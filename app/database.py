@@ -1,10 +1,20 @@
-"""Conexión a PostgreSQL con SQLAlchemy."""
+"""Conexión a PostgreSQL / Supabase con SQLAlchemy y soporte SSL."""
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from app.config import settings
 
-engine = create_engine(settings.DATABASE_URL, pool_pre_ping=True)
+connect_args = {}
+if "supabase.com" in settings.DATABASE_URL and "sslmode=" not in settings.DATABASE_URL:
+    connect_args["sslmode"] = "require"
+
+engine = create_engine(
+    settings.DATABASE_URL,
+    pool_pre_ping=True,
+    pool_size=5,
+    max_overflow=10,
+    connect_args=connect_args,
+)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 

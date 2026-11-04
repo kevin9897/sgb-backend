@@ -1,4 +1,4 @@
-"""Controlador HTTP (Router) para Recursos Bibliográficos."""
+"""Controlador HTTP (Router) para Recursos Bibliográficos (DDSI1-7, DDSI1-9)."""
 from typing import Optional
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -13,9 +13,10 @@ router = APIRouter(prefix="/recursos", tags=["Recursos Bibliográficos"])
 def listar_recursos(
     coleccion: Optional[str] = None,
     estado: Optional[str] = None,
+    q: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
-    return RecursoService(db).listar_recursos(coleccion=coleccion, estado=estado)
+    return RecursoService(db).listar_recursos(coleccion=coleccion, estado=estado, q=q)
 
 
 @router.post("", response_model=RecursoOut)
