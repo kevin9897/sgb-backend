@@ -19,40 +19,46 @@ from seed import poblar_base_de_datos
 
 
 def asegurar_columnas_auditoria_y_borrado_logico(db: Session):
-    """Asegura en Supabase las columnas de borrado lógico y pago simulado sin borrar datos previos."""
+    """Asegura en PostgreSQL/Supabase las columnas de borrado lógico y pago simulado sin borrar datos previos."""
     sentencias = [
         "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS eliminado BOOLEAN NOT NULL DEFAULT FALSE",
         "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS fecha_eliminacion TIMESTAMP NULL",
-        "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NULL DEFAULT NOW()",
+        "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP",
         "ALTER TABLE recursos ADD COLUMN IF NOT EXISTS eliminado BOOLEAN NOT NULL DEFAULT FALSE",
         "ALTER TABLE recursos ADD COLUMN IF NOT EXISTS fecha_eliminacion TIMESTAMP NULL",
-        "ALTER TABLE recursos ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NULL DEFAULT NOW()",
+        "ALTER TABLE recursos ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP",
         "ALTER TABLE multas ADD COLUMN IF NOT EXISTS referencia_pago VARCHAR(50) NULL",
         "ALTER TABLE multas ADD COLUMN IF NOT EXISTS metodo_pago VARCHAR(40) NULL",
         "ALTER TABLE multas ADD COLUMN IF NOT EXISTS fecha_pago TIMESTAMP NULL",
     ]
     for sql in sentencias:
-        db.execute(text(sql))
-    db.commit()
+        try:
+            db.execute(text(sql))
+            db.commit()
+        except Exception:
+            db.rollback()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    Base.metadata.create_all(bind=engine)
-    db = SessionLocal()
     try:
-        asegurar_columnas_auditoria_y_borrado_logico(db)
-        poblar_base_de_datos(db)
-        if db.query(AuditoriaLog).count() == 0:
-            AuditoriaRepository(db).registrar_evento(
-                accion="SISTEMA_INICIALIZADO",
-                entidad="Sistema",
-                entidad_codigo="SGB-MADEIRA",
-                usuario_actor="SYSTEM",
-                detalle="Esquema relacional, borrado lógico y auditoría activos en Supabase PostgreSQL",
-            )
-    finally:
-        db.close()
+        Base.metadata.create_all(bind=engine)
+        db = SessionLocal()
+        try:
+            asegurar_columnas_auditoria_y_borrado_logico(db)
+            poblar_base_de_datos(db)
+            if db.query(AuditoriaLog).count() == 0:
+                AuditoriaRepository(db).registrar_evento(
+                    accion="SISTEMA_INICIALIZADO",
+                    entidad="Sistema",
+                    entidad_codigo="SGB-MADEIRA",
+                    usuario_actor="SYSTEM",
+                    detalle="Esquema relacional, borrado lógico y auditoría activos en PostgreSQL",
+                )
+        finally:
+            db.close()
+    except Exception as exc:
+        print(f"[WARN] Inicio diferido de BD: {exc}")
     yield
 
 
