@@ -1,5 +1,6 @@
-"""Modelos de Usuario (Estudiante, Profesor, Bibliotecario)."""
-from sqlalchemy import Column, Enum, Integer, String
+"""Modelos de Usuario con Borrado Lógico y Auditoría (DDSI-16 / HT-02)."""
+from datetime import datetime
+from sqlalchemy import Boolean, Column, DateTime, Enum, Integer, String
 from app.constants import RolUsuario
 from app.database import Base
 
@@ -16,3 +17,8 @@ class Usuario(Base):
     plan = Column(String(100), nullable=True)
     semestre = Column(Integer, nullable=True)
     rol = Column(Enum(RolUsuario), nullable=False)
+
+    # Borrado lógico y metadatos de auditoría (HT-02)
+    eliminado = Column(Boolean, default=False, nullable=False, index=True)
+    fecha_eliminacion = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=True)

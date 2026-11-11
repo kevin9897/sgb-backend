@@ -1,4 +1,4 @@
-"""Controlador HTTP (Router) para Recursos Bibliográficos (DDSI1-7, DDSI1-9)."""
+"""Controlador HTTP (Router) para Recursos Bibliográficos y Borrado Lógico (DDSI-16)."""
 from typing import Optional
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -14,9 +14,15 @@ def listar_recursos(
     coleccion: Optional[str] = None,
     estado: Optional[str] = None,
     q: Optional[str] = None,
+    incluir_eliminados: bool = False,
     db: Session = Depends(get_db),
 ):
-    return RecursoService(db).listar_recursos(coleccion=coleccion, estado=estado, q=q)
+    return RecursoService(db).listar_recursos(
+        coleccion=coleccion,
+        estado=estado,
+        q=q,
+        incluir_eliminados=incluir_eliminados,
+    )
 
 
 @router.post("", response_model=RecursoOut)

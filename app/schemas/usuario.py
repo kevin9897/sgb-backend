@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, ConfigDict
 from app.constants import RolUsuario
@@ -20,4 +21,6 @@ class UsuarioCreate(UsuarioBase):
 
 class UsuarioOut(UsuarioBase):
     id: int
+    eliminado: bool = False
+    fecha_eliminacion: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)

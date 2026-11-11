@@ -1,11 +1,11 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Optional
 from pydantic import BaseModel, ConfigDict
 from app.constants import EstadoRecurso, TipoColeccion
 
 
 class RecursoCreate(BaseModel):
-    codigo_recurso: str
+    codigo_recurso: Optional[str] = None
     coleccion: TipoColeccion
     titulo: str
     isbn_issn: Optional[str] = None
@@ -39,7 +39,10 @@ class DarDeBajaRequest(BaseModel):
 
 class RecursoOut(RecursoCreate):
     id: int
+    codigo_recurso: str
     estado: EstadoRecurso
     motivo_baja: Optional[str] = None
     bibliotecario_baja_id: Optional[str] = None
+    eliminado: bool = False
+    fecha_eliminacion: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)

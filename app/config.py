@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     SUPABASE_URL: str = ""
     SECRET_KEY: str = "change_me_in_env"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
-    CORS_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"
+    CORS_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173,https://sgb-frontend-production.up.railway.app"
     ENVIRONMENT: str = "development"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

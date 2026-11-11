@@ -1,8 +1,9 @@
-"""Capa de Lógica de Negocio (Service) para Reservas."""
+"""Capa de Lógica de Negocio (Service) para Reservas (DDSI-12 / HU0004)."""
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.constants import REGLAS_COLECCION, RolUsuario
 from app.models.prestamo import Reserva
+from app.repositories.auditoria_repository import AuditoriaRepository
 from app.repositories.multa_repository import MultaRepository
 from app.repositories.prestamo_repository import PrestamoRepository
 from app.repositories.recurso_repository import RecursoRepository
@@ -16,6 +17,7 @@ class ReservaService:
         self.recurso_repo = RecursoRepository(db)
         self.usuario_repo = UsuarioRepository(db)
         self.multa_repo = MultaRepository(db)
+        self.auditoria_repo = AuditoriaRepository(db)
 
     def listar_reservas(self):
         return self.prestamo_repo.listar_reservas_activas()
@@ -53,4 +55,12 @@ class ReservaService:
             orden_cola=orden,
             activa=True,
         )
-        return self.prestamo_repo.guardar_reserva(reserva)
+        guardada = self.prestamo_repo.guardar_reserva(reserva)
+        self.auditoria_repo.registrar_evento(
+            accion="RESERVA_CREADA",
+            entidad="Reserva",
+            entidad_codigo=recurso.codigo_recurso,
+            usuario_actor=bib.identificacion,
+            detalle=f"Reserva en posición #{orden} para usuario {usuario.identificacion} sobre {recurso.codigo_recurso}",
+        )
+        return guardada

@@ -1,5 +1,6 @@
-"""Modelo de Multas."""
-from sqlalchemy import Boolean, Column, Integer, String
+"""Modelo de Multas y Pago Simulado (DDSI-5 / HU0002)."""
+from datetime import datetime
+from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from app.database import Base
 
 
@@ -13,3 +14,6 @@ class Multa(Base):
     dias_multa = Column(Integer, nullable=False)
     valor_cop = Column(Integer, nullable=False)
     pagada = Column(Boolean, default=False, nullable=False)
+    referencia_pago = Column(String(50), nullable=True)
+    metodo_pago = Column(String(40), nullable=True)
+    fecha_pago = Column(DateTime, nullable=True)
